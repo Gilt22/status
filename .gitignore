@@ -1,5 +1,6 @@
 /.DS_Store
-/assets/img*
+/assets/img/*
+!/assets/img/preview.png
 /database
 /vendor
 install.lock
