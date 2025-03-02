@@ -360,8 +360,6 @@ Eine professionelle, PHP-basierte Statuspage zur Anzeige des Systemstatus und zu
    - Domains eingeben
    - SSL-Zertifikate einrichten (optional)
    - Web-Installer durchlaufen
-
-Detaillierte Installationsanweisungen finden Sie in der [Installationsanleitung](docs/INSTALL.md).
     
 
 ## 🛠 Konfiguration & Nutzung
@@ -375,7 +373,7 @@ Der Admin-Bereich bietet folgende Funktionen:
 - **Hosts**: Verwaltung einzelner Komponenten und deren Status
 - **Störungen**: Erstellung und Verwaltung von Störungsmeldungen
 - **E-Mail-Einstellungen**: Konfiguration der E-Mail-Parameter
-- **Website-Einstellungen**: Anpassung von Logo, Farben und Firmeninformationen
+- **Website-Einstellungen**: Anpassung von Logo und Firmeninformationen
 
 ### Öffentliche Seite
 
@@ -398,7 +396,3 @@ Beiträge sind willkommen! So können Sie helfen:
 - 💡 Neue Funktionen vorschlagen
 - 📝 Dokumentation verbessern
 - 🔧 Pull Requests einreichen
-
-## 📄 Lizenz
-
-Dieses Projekt steht unter der [MIT-Lizenz](LICENSE).
