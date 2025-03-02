@@ -16,7 +16,7 @@ $statusPriority = [
     'monitoring' => 3,
     'planned' => 4,
     'resolved' => 5,
-    'completed' => 5,  // Gleiche Priorität wie resolved
+    'completed' => 5,
 ];
 
 // Berechne Status für Gruppen und Hosts...
@@ -26,6 +26,18 @@ foreach ($hostGroups as $group) {
         $incidentDetails = getIncident($incident['id']);
         // Behandle resolved und completed gleich
         if ($incidentDetails && $incident['status'] != 'resolved' && $incident['status'] != 'completed') {
+            // Für geplante Wartungen prüfen, ob der aktuelle Zeitpunkt im Wartungszeitraum liegt
+            if ($incident['status'] == 'planned') {
+                $scheduledStart = isset($incident['scheduled_start']) ? strtotime($incident['scheduled_start']) : null;
+                $scheduledEnd = isset($incident['scheduled_end']) ? strtotime($incident['scheduled_end']) : null;
+                $currentTime = time();
+                
+                // Nur berücksichtigen, wenn die aktuelle Zeit im Wartungszeitraum liegt
+                if (!$scheduledStart || !$scheduledEnd || $currentTime < $scheduledStart || $currentTime > $scheduledEnd) {
+                    continue; // Wartung liegt nicht im aktuellen Zeitraum, überspringen
+                }
+            }
+            
             foreach ($incidentDetails['affected_groups'] as $affectedGroup) {
                 if ($affectedGroup['id'] == $group['id']) {
                     $currentStatus = $groupStatus[$group['id']];
@@ -50,6 +62,18 @@ foreach ($hosts as $host) {
         $incidentDetails = getIncident($incident['id']);
         // Behandle resolved und completed gleich
         if ($incidentDetails && $incident['status'] != 'resolved' && $incident['status'] != 'completed') {
+            // Für geplante Wartungen prüfen, ob der aktuelle Zeitpunkt im Wartungszeitraum liegt
+            if ($incident['status'] == 'planned') {
+                $scheduledStart = isset($incident['scheduled_start']) ? strtotime($incident['scheduled_start']) : null;
+                $scheduledEnd = isset($incident['scheduled_end']) ? strtotime($incident['scheduled_end']) : null;
+                $currentTime = time();
+                
+                // Nur berücksichtigen, wenn die aktuelle Zeit im Wartungszeitraum liegt
+                if (!$scheduledStart || !$scheduledEnd || $currentTime < $scheduledStart || $currentTime > $scheduledEnd) {
+                    continue; // Wartung liegt nicht im aktuellen Zeitraum, überspringen
+                }
+            }
+            
             foreach ($incidentDetails['affected_hosts'] as $affectedHost) {
                 if ($affectedHost['id'] == $host['id']) {
                     $currentStatus = $hostStatus[$host['id']];
