@@ -29,7 +29,6 @@ Eine professionelle, PHP-basierte Statuspage zur Anzeige des Systemstatus und zu
 
 💾 **Einfache Wartung**
 - SQLite-Datenbank ohne zusätzliche Server
-- Automatische Backups
     
 
 ## 🚀 Installation
