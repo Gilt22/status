@@ -57,7 +57,11 @@ if (!file_exists($pagePath)) {
             color: white;
         }
         .badge-resolved {
-            background-color: #6c757d;
+            background-color: #28a745;
+            color: white;
+        }
+        .badge-completed {
+            background-color: #28a745;
             color: white;
         }
         /* Timeline-Bars */
@@ -80,7 +84,10 @@ if (!file_exists($pagePath)) {
             background-color: #6f42c1;
         }
         .status-resolved {
-            background-color: #6c757d;
+            background-color: #28a745;
+        }
+        .status-completed {
+            background-color: #28a745;
         }
 
         .status-indicator {

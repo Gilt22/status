@@ -6,7 +6,7 @@ $incidents = getIncidents(null, $settings['incident_days']);
 $hostGroups = getAllHostGroups();
 $hosts = getHosts();
 
-// Status-Logik wie gehabt...
+// Status-Logik mit gleicher Behandlung von resolved und completed
 $groupStatus = [];
 $hostStatus = [];
 $statusPriority = [
@@ -16,7 +16,7 @@ $statusPriority = [
     'monitoring' => 3,
     'planned' => 4,
     'resolved' => 5,
-    'completed' => 5,
+    'completed' => 5,  // Gleiche Priorität wie resolved
 ];
 
 // Berechne Status für Gruppen und Hosts...
@@ -24,7 +24,8 @@ foreach ($hostGroups as $group) {
     $groupStatus[$group['id']] = 'operational';
     foreach ($incidents as $incident) {
         $incidentDetails = getIncident($incident['id']);
-        if ($incidentDetails && $incident['status'] != 'resolved') {
+        // Behandle resolved und completed gleich
+        if ($incidentDetails && $incident['status'] != 'resolved' && $incident['status'] != 'completed') {
             foreach ($incidentDetails['affected_groups'] as $affectedGroup) {
                 if ($affectedGroup['id'] == $group['id']) {
                     $currentStatus = $groupStatus[$group['id']];
@@ -47,7 +48,8 @@ foreach ($hosts as $host) {
     }
     foreach ($incidents as $incident) {
         $incidentDetails = getIncident($incident['id']);
-        if ($incidentDetails && $incident['status'] != 'resolved') {
+        // Behandle resolved und completed gleich
+        if ($incidentDetails && $incident['status'] != 'resolved' && $incident['status'] != 'completed') {
             foreach ($incidentDetails['affected_hosts'] as $affectedHost) {
                 if ($affectedHost['id'] == $host['id']) {
                     $currentStatus = $hostStatus[$host['id']];
@@ -100,7 +102,8 @@ foreach ($incidents as $incident) {
     $incidentDetails = getIncident($incident['id']);
     if ($incidentDetails) {
         $startHour = floor((time() - strtotime($incident['created_at'])) / 3600);
-        $endHour = $incident['resolved_at'] ? 
+        // Behandle resolved und completed gleich
+        $endHour = ($incident['resolved_at'] || $incident['status'] == 'completed') ? 
             floor((time() - strtotime($incident['resolved_at'])) / 3600) : 0;
         
         foreach ($incidentDetails['affected_groups'] as $affectedGroup) {
@@ -171,6 +174,9 @@ function renderIncident($incident) {
                         case 'planned':
                             echo 'badge-planned';
                             break;
+                        case 'completed':
+                            echo 'badge-resolved'; // Gleiche Klasse wie resolved
+                            break;
                         default:
                             echo 'badge-resolved';
                         }
@@ -199,7 +205,7 @@ function renderIncident($incident) {
                         <i class="bi bi-clock me-1"></i>
                         Gemeldet: <?php echo date('d.m.Y H:i', strtotime($incident['created_at'])); ?>
                     </p>
-                    <?php if ($incident['status'] === 'resolved' && $incident['resolved_at']): ?>
+                    <?php if (($incident['status'] === 'resolved' || $incident['status'] === 'completed') && $incident['resolved_at']): ?>
                         <p class="mb-0">
                             <i class="bi bi-check-circle me-1"></i>
                             Behoben: <?php echo date('d.m.Y H:i', strtotime($incident['resolved_at'])); ?>
@@ -372,6 +378,9 @@ if($settings['layout'] == 1){
                                 case 'planned':
                                     echo 'badge-planned';
                                     break;
+                                case 'completed':
+                                    echo 'badge-resolved'; // Gleiche Klasse wie resolved
+                                    break;
                                 default:
                                     echo 'badge-resolved';
                             }
@@ -391,6 +400,7 @@ if($settings['layout'] == 1){
                                 'progress' => 'status-progress',
                                 'identified' => 'status-identified',
                                 'monitoring' => 'status-monitoring',
+                                'completed' => 'status-resolved', // Gleiche Klasse wie resolved
                                 default => 'status-resolved'
                             };
                             ?>
@@ -433,6 +443,9 @@ if($settings['layout'] == 1){
                                                 break;
                                             case 'planned':
                                                 echo 'badge-planned';
+                                                break;
+                                            case 'completed':
+                                                echo 'badge-resolved'; // Gleiche Klasse wie resolved
                                                 break;
                                             default:
                                                 echo 'badge-resolved';
@@ -565,7 +578,8 @@ if($settings['layout'] == 1){
         'progress' => 0,
         'monitoring' => 0,
         'planned' => 0,
-        'resolved' => 0
+        'resolved' => 0,
+        'completed' => 0  // Hinzugefügt für completed
     ];
     
     foreach ($hostGroups as $group) {
@@ -574,6 +588,9 @@ if($settings['layout'] == 1){
             $statusCount[$status]++;
         }
     }
+    
+    // Kombiniere resolved und completed für die Anzeige
+    $statusCount['resolved'] += $statusCount['completed'];
     
     // Status-Karten mit Icons
     $statusCards = [
@@ -656,6 +673,9 @@ if($settings['layout'] == 1){
                             case 'planned':
                                 echo 'badge-planned';
                                 break;
+                            case 'completed':
+                                echo 'badge-resolved'; // Gleiche Klasse wie resolved
+                                break;
                             default:
                                 echo 'badge-resolved';
                         }
@@ -675,6 +695,7 @@ if($settings['layout'] == 1){
                                 'progress' => 'status-progress',
                                 'identified' => 'status-identified',
                                 'monitoring' => 'status-monitoring',
+                                'completed' => 'status-resolved', // Gleiche Klasse wie resolved
                                 default => 'status-resolved'
                             };
                             ?>
@@ -688,7 +709,6 @@ if($settings['layout'] == 1){
                         <span>24h</span>
                         <span>Jetzt</span>
                     </div>
-
                     <?php
                     // Hosts für diese Gruppe
                     $groupHosts = array_filter($hosts, function($host) use ($group) {
@@ -718,6 +738,9 @@ if($settings['layout'] == 1){
                                                 case 'planned':
                                                     echo 'bg-primary';
                                                     break;
+                                                case 'completed':
+                                                    echo 'bg-secondary'; // Gleiche Farbe wie resolved
+                                                    break;
                                                 default:
                                                     echo 'bg-secondary';
                                             }
@@ -744,6 +767,9 @@ if($settings['layout'] == 1){
                                                 break;
                                             case 'planned':
                                                 echo 'badge-planned';
+                                                break;
+                                            case 'completed':
+                                                echo 'badge-resolved'; // Gleiche Klasse wie resolved
                                                 break;
                                             default:
                                                 echo 'badge-resolved';
@@ -788,7 +814,7 @@ if($settings['layout'] == 1){
             <div class="tab-pane fade show active" id="active-incidents" role="tabpanel" aria-labelledby="active-tab">
                 <?php
                 $activeIncidents = array_filter($incidents, function($incident) {
-                    return $incident['status'] != 'resolved' && $incident['status'] != 'planned';
+                    return $incident['status'] != 'resolved' && $incident['status'] != 'completed' && $incident['status'] != 'planned';
                 });
                 
                 if (empty($activeIncidents)):
@@ -832,7 +858,7 @@ if($settings['layout'] == 1){
             <div class="tab-pane fade" id="resolved-incidents" role="tabpanel" aria-labelledby="resolved-tab">
                 <?php
                 $resolvedIncidents = array_filter($incidents, function($incident) {
-                    return $incident['status'] == 'resolved';
+                    return $incident['status'] == 'resolved' || $incident['status'] == 'completed';
                 });
                 
                 if (empty($resolvedIncidents)):
