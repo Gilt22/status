@@ -599,14 +599,13 @@ function unsubscribe($token) {
 
 /**
  * Überprüft Admin-Anmeldedaten
- * @param string $username Benutzername
  * @param string $password Passwort
  * @return array|false Admin-Daten bei erfolgreicher Anmeldung, false bei Fehler
  */
-function verifyAdminLogin($username, $password) {
+function verifyAdminLogin($email, $password) {
     $db = getDbConnection();
-    $stmt = $db->prepare('SELECT * FROM admins WHERE username = :username');
-    $stmt->bindValue(':username', $username, SQLITE3_TEXT);
+    $stmt = $db->prepare('SELECT * FROM admins WHERE email = :email');
+    $stmt->bindValue(':email', $email, SQLITE3_TEXT);
     $result = $stmt->execute();
     
     $admin = $result->fetchArray(SQLITE3_ASSOC);

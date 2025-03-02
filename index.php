@@ -1,4 +1,9 @@
 <?php
+if (!file_exists(__DIR__ . '/database')) {
+    header('Location: install.php');
+    exit;
+}
+
 require_once('includes/functions.php');
 require_once('includes/site_functions.php');
 
@@ -27,53 +32,73 @@ if (!file_exists($pagePath)) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <style>
-        .status-operational { background-color: #10B981; }
-        .status-investigating { background-color: #F59E0B; }
-        .status-progress { background-color: #F59E0B; }
-        .status-identified { background-color: #EF4444; }
-        .status-monitoring { background-color: #3B82F6; }
-        .status-resolved { background-color: #6B7280; }
-        .status-completed { background-color: #6B7280; }
-        
-        .timeline-bar {
-            height: 8px;
-            transition: opacity 0.2s;
-        }
-        .timeline-bar:hover {
-            opacity: 0.8;
-        }
-        
         .badge-operational {
-            background-color: #d1fae5 !important;
-            color: #065f46 !important;
+            background-color: #28a745;
+            color: white;
         }
         .badge-investigating {
-            background-color: #fef3c7 !important;
-            color: #92400e !important;
-        }
-        .badge-progress {
-            background-color: #fef3c7 !important;
-            color: #92400e !important;
+            background-color: #ffc107;
+            color: #212529;
         }
         .badge-identified {
-            background-color: #fee2e2 !important;
-            color: #991b1b !important;
+            background-color: #fd7e14;
+            color: white;
+        }
+        .badge-progress {
+            background-color: #17a2b8;
+            color: white;
         }
         .badge-monitoring {
-            background-color: #dbeafe !important;
-            color: #1e40af !important;
+            background-color: #6f42c1;
+            color: white;
         }
         .badge-planned {
-            background-color: #f3e8ff !important;
-            color: #6b21a8 !important;
+            background-color: #007bff;
+            color: white;
         }
         .badge-resolved {
-            background-color: #f3f4f6 !important;
-            color: #1f2937 !important;
+            background-color: #6c757d;
+            color: white;
         }
-        .badge-completed {
-            background-color: #f3f4f6 !important;
-            color: #1f2937 !important;
+        /* Timeline-Bars */
+        .timeline-bar {
+            height: 8px;
+        }
+        .status-operational {
+            background-color: #28a745;
+        }
+        .status-investigating {
+            background-color: #ffc107;
+        }
+        .status-identified {
+            background-color: #fd7e14;
+        }
+        .status-progress {
+            background-color: #17a2b8;
+        }
+        .status-monitoring {
+            background-color: #6f42c1;
+        }
+        .status-resolved {
+            background-color: #6c757d;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        }
+
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
     </style>
 </head>

@@ -25,7 +25,8 @@ function getSiteSettings() {
             'custom_footer_text' => ' ',
             'imprint_url' => ' ',
             'privacy_url' => ' ',
-            'incident_days' => ' '
+            'incident_days' => '7',
+            'layout' => '1'
         ];
     }
     
@@ -51,6 +52,8 @@ function updateSiteSettings($settings) {
                          custom_footer_text = :custom_footer_text,
                          imprint_url = :imprint_url,
                          privacy_url = :privacy_url,
+                         incident_days = :incident_days,
+                         layout = :layout,
                          updated_at = CURRENT_TIMESTAMP 
                          WHERE id = 1');
                          
@@ -64,6 +67,8 @@ function updateSiteSettings($settings) {
     $stmt->bindValue(':custom_footer_text', $settings['custom_footer_text'] ?? '', SQLITE3_TEXT);
     $stmt->bindValue(':imprint_url', $settings['imprint_url'] ?? '', SQLITE3_TEXT);
     $stmt->bindValue(':privacy_url', $settings['privacy_url'] ?? '', SQLITE3_TEXT);
+    $stmt->bindValue(':incident_days', $settings['incident_days'] ?? '', SQLITE3_TEXT);
+    $stmt->bindValue(':layout', $settings['layout'] ?? '', SQLITE3_TEXT);
     
     $result = $stmt->execute();
     $changes = $db->changes();
@@ -72,10 +77,10 @@ function updateSiteSettings($settings) {
     if ($changes == 0) {
         $stmt = $db->prepare('INSERT INTO site_settings (id, site_title, company_name, company_address, 
                              company_email, company_phone, logo_path, custom_css, custom_footer_text, 
-                             imprint_url, privacy_url) 
+                             imprint_url, privacy_url, incident_days, layout) 
                              VALUES (1, :site_title, :company_name, :company_address, :company_email, 
                              :company_phone, :logo_path, :custom_css, :custom_footer_text, 
-                             :imprint_url, :privacy_url)');
+                             :imprint_url, :privacy_url, :incident_days, :layout)');
                              
         $stmt->bindValue(':site_title', $settings['site_title'], SQLITE3_TEXT);
         $stmt->bindValue(':company_name', $settings['company_name'], SQLITE3_TEXT);
@@ -87,6 +92,8 @@ function updateSiteSettings($settings) {
         $stmt->bindValue(':custom_footer_text', $settings['custom_footer_text'] ?? '', SQLITE3_TEXT);
         $stmt->bindValue(':imprint_url', $settings['imprint_url'] ?? '', SQLITE3_TEXT);
         $stmt->bindValue(':privacy_url', $settings['privacy_url'] ?? '', SQLITE3_TEXT);
+        $stmt->bindValue(':incident_days', $settings['incident_days'] ?? '', SQLITE3_TEXT);
+        $stmt->bindValue(':layout', $settings['layout'] ?? '', SQLITE3_TEXT);
         
         $result = $stmt->execute();
     }

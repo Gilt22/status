@@ -19,16 +19,18 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Einstellungen aktualisieren
     $newSettings = [
-        'site_title' => $_POST['site_title'] ?? '',
-        'company_name' => $_POST['company_name'] ?? '',
-        'company_address' => $_POST['company_address'] ?? '',
-        'company_email' => $_POST['company_email'] ?? '',
-        'company_phone' => $_POST['company_phone'] ?? '',
+        'site_title' => $_POST['site_title'] ?? ' ',
+        'company_name' => $_POST['company_name'] ?? ' ',
+        'company_address' => $_POST['company_address'] ?? ' ',
+        'company_email' => $_POST['company_email'] ?? ' ',
+        'company_phone' => $_POST['company_phone'] ?? ' ',
         'custom_css' => $_POST['custom_css'] ?? '',
-        'custom_footer_text' => $_POST['custom_footer_text'] ?? '',
-        'imprint_url' => $_POST['imprint_url'] ?? '',
-        'privacy_url' => $_POST['privacy_url'] ?? '',
-        'logo_path' => $siteSettings['logo_path'] // Standardmäßig den aktuellen Pfad beibehalten
+        'custom_footer_text' => $_POST['custom_footer_text'] ?? ' ',
+        'imprint_url' => $_POST['imprint_url'] ?? ' ',
+        'privacy_url' => $_POST['privacy_url'] ?? ' ',
+        'logo_path' => $siteSettings['logo_path'],
+        'incident_days' => $_POST['incident_days'] ?? 7,
+        'layout' => $_POST['layout'] ?? 1
     ];
     
     // Logo-Upload verarbeiten
@@ -82,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <div class="form-group">
                         <label for="site_title">Seitentitel</label>
-                        <input type="text" id="site_title" name="site_title" value="<?php echo h($siteSettings['site_title']); ?>" required>
+                        <input type="text" id="site_title" name="site_title" value="<?php echo h($siteSettings['site_title'] ?? ''); ?>" required>
                         <small>Wird im Browser-Tab und als Hauptüberschrift angezeigt.</small>
                     </div>
                 </div>
@@ -92,22 +94,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <div class="form-group">
                         <label for="company_name">Firmenname</label>
-                        <input type="text" id="company_name" name="company_name" value="<?php echo h($siteSettings['company_name']); ?>">
+                        <input type="text" id="company_name" name="company_name" value="<?php echo h($siteSettings['company_name'] ?? ''); ?>">
                     </div>
                     
                     <div class="form-group">
                         <label for="company_address">Adresse</label>
-                        <input type="text" id="company_address" name="company_address" value="<?php echo h($siteSettings['company_address']); ?>">
+                        <input type="text" id="company_address" name="company_address" value="<?php echo h($siteSettings['company_address'] ?? ''); ?>">
                     </div>
                     
                     <div class="form-group">
                         <label for="company_email">E-Mail</label>
-                        <input type="email" id="company_email" name="company_email" value="<?php echo h($siteSettings['company_email']); ?>">
+                        <input type="email" id="company_email" name="company_email" value="<?php echo h($siteSettings['company_email'] ?? ''); ?>">
                     </div>
                     
                     <div class="form-group">
                         <label for="company_phone">Telefon</label>
-                        <input type="text" id="company_phone" name="company_phone" value="<?php echo h($siteSettings['company_phone']); ?>">
+                        <input type="text" id="company_phone" name="company_phone" value="<?php echo h($siteSettings['company_phone'] ?? ''); ?>">
+                    </div>
+
+                    
+                    <div class="form-group">
+                        <label for="incident_days">Wie viele Tage rückwirkend sollen Vorfälle angezeigt werden?</label>
+                        <input type="text" id="incident_days" name="incident_days" value="<?php echo h($siteSettings['incident_days'] ?? ''); ?>">
                     </div>
                 </div>
                 
@@ -125,10 +133,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="file" id="logo" name="logo" accept="image/*">
                         <small>Empfohlene Größe: 200x50 Pixel. Unterstützte Formate: JPG, PNG, GIF, SVG.</small>
                     </div>
+
+                    <div class="form-group">
+                        <label for="layout">Layout</label>
+                        <select class="form-select" name="layout" id="layout">
+                            <option value="1" <?php echo ($siteSettings['layout'] == 1) ? 'selected' : ''; ?>>Layout 1</option>
+                            <option value="2" <?php echo ($siteSettings['layout'] == 2) ? 'selected' : ''; ?>>Layout 2</option>
+                        </select>
+                    </div>
                     
                     <div class="form-group">
                         <label for="custom_css">Benutzerdefiniertes CSS</label>
-                        <textarea id="custom_css" name="custom_css" rows="8"><?php echo h($siteSettings['custom_css']); ?></textarea>
+                        <textarea id="custom_css" name="custom_css" rows="8"><?php echo h($siteSettings['custom_css'] ?? ''); ?></textarea>
                         <small>Fügen Sie hier benutzerdefiniertes CSS hinzu, um das Aussehen der Statusseite anzupassen.</small>
                     </div>
                 </div>
@@ -138,18 +154,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <div class="form-group">
                         <label for="custom_footer_text">Benutzerdefinierter Footer-Text</label>
-                        <textarea id="custom_footer_text" name="custom_footer_text" rows="4"><?php echo h($siteSettings['custom_footer_text']); ?></textarea>
+                        <textarea id="custom_footer_text" name="custom_footer_text" rows="4"><?php echo h($siteSettings['custom_footer_text'] ?? ''); ?></textarea>
                         <small>Dieser Text wird im Footer der Statusseite angezeigt.</small>
                     </div>
                     
                     <div class="form-group">
                         <label for="imprint_url">URL zum Impressum</label>
-                        <input type="url" id="imprint_url" name="imprint_url" value="<?php echo h($siteSettings['imprint_url']); ?>">
+                        <input type="url" id="imprint_url" name="imprint_url" value="<?php echo h($siteSettings['imprint_url'] ?? ''); ?>">
                     </div>
                     
                     <div class="form-group">
                         <label for="privacy_url">URL zur Datenschutzerklärung</label>
-                        <input type="url" id="privacy_url" name="privacy_url" value="<?php echo h($siteSettings['privacy_url']); ?>">
+                        <input type="url" id="privacy_url" name="privacy_url" value="<?php echo h($siteSettings['privacy_url'] ?? ''); ?>">
                     </div>
                 </div>
                 

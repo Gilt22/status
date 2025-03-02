@@ -17,6 +17,6 @@
     </nav>
     
     <div class="sidebar-footer">
-        <p>Version 1.0</p>
+        <p>Version 0.3</p>
     </div>
 </aside>

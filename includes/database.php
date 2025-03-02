@@ -93,9 +93,8 @@ function initializeDatabase() {
     // Tabelle für Administratoren
     $db->exec('CREATE TABLE IF NOT EXISTS admins (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
-        email TEXT,
+        email TEXT UNIQUE NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         last_login TIMESTAMP NULL
     )');
@@ -142,6 +141,8 @@ function initializeDatabase() {
         imprint_url TEXT,
         privacy_url TEXT,
         custom_css TEXT,
+        layout STRING DEFAULT "1",
+        incident_days STRING DEFAULT "7",
         custom_footer_text TEXT,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )');
@@ -196,17 +197,6 @@ function initializeDatabase() {
                           'Abmeldung von Statusbenachrichtigungen', 
                           'Hallo,\n\nSie haben sich erfolgreich von den Statusbenachrichtigungen abgemeldet.\n\nFalls Sie sich zu einem späteren Zeitpunkt wieder anmelden möchten, besuchen Sie einfach unsere Statusseite:\n{{statuspage_url}}\n\nMit freundlichen Grüßen,\nIhr Statuspage-Team',
                           'Dieses Template wird verwendet, wenn sich jemand von Benachrichtigungen abmeldet.')");
-    }
-    
-    // Standard-Admin erstellen, falls keiner existiert
-    $result = $db->query('SELECT COUNT(*) as count FROM admins');
-    $count = $result->fetchArray(SQLITE3_ASSOC)['count'];
-    
-    if ($count == 0) {
-        // Standard-Passwort: admin123 (in der Produktion ändern!)
-        $defaultPassword = password_hash('admin123', PASSWORD_DEFAULT);
-        $db->exec("INSERT INTO admins (username, password, email) 
-                  VALUES ('admin', '$defaultPassword', 'admin@example.com')");
     }
     
     $db->close();
