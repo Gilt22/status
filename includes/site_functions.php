@@ -105,27 +105,25 @@ function saveLogo($file) {
         return false;
     }
     
-    // Überprüfen, ob es sich um ein Bild handelt
-    $fileInfo = getimagesize($file['tmp_name']);
-    if ($fileInfo === false) {
-        return false;
-    }
+    // MIME-Typ der Datei ermitteln
+    $mimeType = mime_content_type($file['tmp_name']);
     
-    // Erlaubte Bildtypen
-    $allowedTypes = [
-        IMAGETYPE_JPEG => 'jpg',
-        IMAGETYPE_PNG => 'png',
-        IMAGETYPE_GIF => 'gif',
-        IMAGETYPE_SVG => 'svg'
+    // Erlaubte MIME-Typen
+    $allowedMimeTypes = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/gif' => 'gif',
+        'image/svg+xml' => 'svg',
+        'image/webp' => 'webp'
     ];
     
-    // Überprüfen, ob der Bildtyp erlaubt ist
-    if (!isset($allowedTypes[$fileInfo[2]]) && $file['type'] !== 'image/svg+xml') {
+    // Überprüfen, ob der MIME-Typ erlaubt ist
+    if (!isset($allowedMimeTypes[$mimeType])) {
         return false;
     }
     
     // Dateiendung bestimmen
-    $extension = $file['type'] === 'image/svg+xml' ? 'svg' : $allowedTypes[$fileInfo[2]];
+    $extension = $allowedMimeTypes[$mimeType];
     
     // Zielverzeichnis
     $uploadDir = __DIR__ . '/../assets/img/';
