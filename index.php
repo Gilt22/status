@@ -29,9 +29,11 @@ if (!file_exists($pagePath)) {
     <style>
         .status-operational { background-color: #10B981; }
         .status-investigating { background-color: #F59E0B; }
+        .status-progress { background-color: #F59E0B; }
         .status-identified { background-color: #EF4444; }
         .status-monitoring { background-color: #3B82F6; }
         .status-resolved { background-color: #6B7280; }
+        .status-completed { background-color: #6B7280; }
         
         .timeline-bar {
             height: 8px;
@@ -49,6 +51,10 @@ if (!file_exists($pagePath)) {
             background-color: #fef3c7 !important;
             color: #92400e !important;
         }
+        .badge-progress {
+            background-color: #fef3c7 !important;
+            color: #92400e !important;
+        }
         .badge-identified {
             background-color: #fee2e2 !important;
             color: #991b1b !important;
@@ -62,6 +68,10 @@ if (!file_exists($pagePath)) {
             color: #6b21a8 !important;
         }
         .badge-resolved {
+            background-color: #f3f4f6 !important;
+            color: #1f2937 !important;
+        }
+        .badge-completed {
             background-color: #f3f4f6 !important;
             color: #1f2937 !important;
         }

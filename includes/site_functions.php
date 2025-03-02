@@ -17,14 +17,15 @@ function getSiteSettings() {
         return [
             'site_title' => 'Statuspage',
             'company_name' => 'Statuspage',
-            'company_address' => '',
-            'company_email' => '',
-            'company_phone' => '',
-            'logo_path' => '',
-            'custom_css' => '',
-            'custom_footer_text' => '',
-            'imprint_url' => '',
-            'privacy_url' => ''
+            'company_address' => ' ',
+            'company_email' => ' ',
+            'company_phone' => ' ',
+            'logo_path' => ' ',
+            'custom_css' => ' ',
+            'custom_footer_text' => ' ',
+            'imprint_url' => ' ',
+            'privacy_url' => ' ',
+            'incident_days' => ' '
         ];
     }
     

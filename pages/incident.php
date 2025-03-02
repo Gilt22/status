@@ -40,9 +40,11 @@ $statusTexts = [
     'operational' => 'Betriebsbereit',
     'planned' => 'Geplante Wartung',
     'investigating' => 'Wird untersucht',
+    'progress' => 'In Bearbeitung',
     'identified' => 'Problem erkannt',
     'monitoring' => 'Wird überwacht',
-    'resolved' => 'Behoben'
+    'resolved' => 'Behoben',
+    'completed' => 'Abgeschlossen'
 ];
 
 // Status-Badge-Klassen
@@ -50,9 +52,11 @@ $statusBadgeClasses = [
     'operational' => 'badge-operational',
     'planned' => 'badge-planned',
     'investigating' => 'badge-investigating',
+    'progress' => 'badge-progress',
     'identified' => 'badge-identified',
     'monitoring' => 'badge-monitoring',
-    'resolved' => 'badge-resolved'
+    'resolved' => 'badge-resolved',
+    'completed' => 'badge-completed'
 ];
 ?>
 

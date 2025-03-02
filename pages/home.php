@@ -1,9 +1,8 @@
 <?php
-// Hole aktuelle Störungen (ohne Wartungsarbeiten)
-$activeIncidents = getIncidents(null, INCIDENTS_DAYS, false);
+$settings = getSiteSettings();
 
-// Hole Wartungsarbeiten für die letzten 7 Tage und die nächsten 30 Tage
-$maintenanceIncidents = getMaintenanceByDateRange(7, 30);
+// Hole alle Vorfälle für den konfigurierten Zeitraum
+$incidents = getIncidents(null, isset($settings['incident_days']) ? (int)$settings['incident_days'] : 7);
 $hostGroups = getAllHostGroups();
 $hosts = getHosts();
 
@@ -13,15 +12,17 @@ $hostStatus = [];
 $statusPriority = [
     'investigating' => 1,
     'identified' => 2,
+    'progress' => 2,
     'monitoring' => 3,
     'planned' => 4,
-    'resolved' => 5
+    'resolved' => 5,
+    'completed' => 5,
 ];
 
 // Berechne Status für Gruppen und Hosts...
 foreach ($hostGroups as $group) {
     $groupStatus[$group['id']] = 'operational';
-    foreach ($activeIncidents as $incident) {
+    foreach ($incidents as $incident) {
         $incidentDetails = getIncident($incident['id']);
         if ($incidentDetails && $incident['status'] != 'resolved') {
             foreach ($incidentDetails['affected_groups'] as $affectedGroup) {
@@ -44,7 +45,7 @@ foreach ($hosts as $host) {
     if (isset($host['group_id']) && isset($groupStatus[$host['group_id']]) && $groupStatus[$host['group_id']] != 'operational') {
         $hostStatus[$host['id']] = $groupStatus[$host['group_id']];
     }
-    foreach ($activeIncidents as $incident) {
+    foreach ($incidents as $incident) {
         $incidentDetails = getIncident($incident['id']);
         if ($incidentDetails && $incident['status'] != 'resolved') {
             foreach ($incidentDetails['affected_hosts'] as $affectedHost) {
@@ -95,7 +96,7 @@ foreach ($hostGroups as $group) {
 }
 
 // Fülle Timeline mit echten Incident-Daten
-foreach ($activeIncidents as $incident) {
+foreach ($incidents as $incident) {
     $incidentDetails = getIncident($incident['id']);
     if ($incidentDetails) {
         $startHour = floor((time() - strtotime($incident['created_at'])) / 3600);
@@ -120,9 +121,11 @@ $statusTexts = [
     'operational' => 'Betriebsbereit',
     'planned' => 'Geplante Wartung',
     'investigating' => 'Wird untersucht',
+    'progress' => 'In Bearbeitung',
     'identified' => 'Problem erkannt',
     'monitoring' => 'Wird überwacht',
-    'resolved' => 'Behoben'
+    'resolved' => 'Behoben',
+    'completed' => 'Abgeschlossen'
 ];
 ?>
 
@@ -169,6 +172,9 @@ $statusTexts = [
                                 case 'investigating':
                                     echo 'badge-investigating';
                                     break;
+                                case 'progress':
+                                    echo 'badge-progress';
+                                    break;
                                 case 'identified':
                                     echo 'badge-identified';
                                     break;
@@ -194,6 +200,7 @@ $statusTexts = [
                             $statusClass = match($timelineSlot['status']) {
                                 'operational' => 'status-operational',
                                 'investigating' => 'status-investigating',
+                                'progress' => 'status-progress',
                                 'identified' => 'status-identified',
                                 'monitoring' => 'status-monitoring',
                                 default => 'status-resolved'
@@ -227,6 +234,9 @@ $statusTexts = [
                                             case 'investigating':
                                                 echo 'badge-investigating';
                                                 break;
+                                            case 'progress':
+                                                echo 'badge-progress';
+                                                break;
                                             case 'identified':
                                                 echo 'badge-identified';
                                                 break;
@@ -238,7 +248,7 @@ $statusTexts = [
                                                 break;
                                             default:
                                                 echo 'badge-resolved';
-                                        }
+                                            }
                                         ?>">
                                         <?php echo $statusTexts[$hostStatus[$host['id']]] ?? $hostStatus[$host['id']]; ?>
                                     </span>
@@ -253,31 +263,6 @@ $statusTexts = [
 </div>
 
 <?php
-// Vorfälle in Kategorien einteilen
-$activeIncidents = array_filter($activeIncidents, function($incident) {
-    return !empty($incident);
-});
-
-// Nach Datum sortieren (neueste zuerst)
-usort($activeIncidents, function($a, $b) {
-    return strtotime($b['created_at']) - strtotime($a['created_at']);
-});
-
-// Vorfälle in Kategorien einteilen
-$currentIncidents = [];
-$plannedMaintenance = [];
-$recentlyResolved = [];
-
-foreach ($activeIncidents as $incident) {
-    if ($incident['status'] === 'planned') {
-        $plannedMaintenance[] = $incident;
-    } elseif ($incident['status'] === 'resolved') {
-        $recentlyResolved[] = $incident;
-    } else {
-        $currentIncidents[] = $incident;
-    }
-}
-
 // Funktion zum Anzeigen eines Vorfalls
 function renderIncident($incident) {
     global $statusTexts;
@@ -294,8 +279,14 @@ function renderIncident($incident) {
                 <span class="badge rounded-pill ms-2
                     <?php
                     switch($incident['status']) {
+                        case 'operational':
+                            echo 'badge-operational';
+                            break;
                         case 'investigating':
                             echo 'badge-investigating';
+                            break;
+                        case 'progress':
+                            echo 'badge-progress';
                             break;
                         case 'identified':
                             echo 'badge-identified';
@@ -306,12 +297,9 @@ function renderIncident($incident) {
                         case 'planned':
                             echo 'badge-planned';
                             break;
-                        case 'resolved':
-                            echo 'badge-resolved';
-                            break;
                         default:
                             echo 'badge-resolved';
-                    }
+                        }
                     ?>">
                     <?php echo $statusTexts[$incident['status']] ?? $incident['status']; ?>
                 </span>
@@ -320,22 +308,18 @@ function renderIncident($incident) {
             <div class="text-muted small mb-3">
                 <?php if ($incident['status'] === 'planned'): ?>
                     <?php
-                    $plannedStart = isset($incident['planned_start']) ? strtotime($incident['planned_start']) : null;
-                    $plannedEnd = isset($incident['planned_end']) ? strtotime($incident['planned_end']) : null;
+                    $scheduledStart = isset($incident['scheduled_start']) ? strtotime($incident['scheduled_start']) : null;
+                    $scheduledEnd = isset($incident['scheduled_end']) ? strtotime($incident['scheduled_end']) : null;
                     ?>
-                    <?php if ($plannedStart): ?>
+                    <?php if ($scheduledStart): ?>
                         <p class="mb-1">
                             <i class="bi bi-calendar me-1"></i>
-                            Geplant für: <?php echo date('d.m.Y H:i', $plannedStart); ?>
-                            <?php if ($plannedEnd): ?>
-                                - <?php echo date('d.m.Y H:i', $plannedEnd); ?>
+                            Geplant für: <?php echo date('d.m.Y H:i', $scheduledStart); ?>
+                            <?php if ($scheduledEnd): ?>
+                                - <?php echo date('d.m.Y H:i', $scheduledEnd); ?>
                             <?php endif; ?>
                         </p>
                     <?php endif; ?>
-                    <p class="mb-0">
-                        <i class="bi bi-clock me-1"></i>
-                        Erwartete Dauer: <?php echo h($incident['expected_duration'] ?? 'Nicht angegeben'); ?>
-                    </p>
                 <?php else: ?>
                     <p class="mb-1">
                         <i class="bi bi-clock me-1"></i>
@@ -362,79 +346,141 @@ function renderIncident($incident) {
     </div>
     <?php
 }
-?>
 
-<?php if (!empty($currentIncidents)): ?>
-    <div class="mt-5">
-        <h2 class="h4 mb-4 d-flex align-items-center">
-            <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
-            Aktuelle Störungen
-        </h2>
-        <?php foreach ($currentIncidents as $incident): ?>
-            <?php renderIncident($incident); ?>
-        <?php endforeach; ?>
-    </div>
-<?php endif; ?>
+// Vorfälle nach scheduled_start sortieren
+usort($incidents, function($a, $b) {
+    // Verwende scheduled_start für die Sortierung
+    $dateA = isset($a['scheduled_start']) ? strtotime($a['scheduled_start']) : strtotime($a['created_at']);
+    $dateB = isset($b['scheduled_start']) ? strtotime($b['scheduled_start']) : strtotime($b['created_at']);
+    
+    return $dateB - $dateA; // Absteigend sortieren (neueste zuerst)
+});
 
-<?php if (!empty($maintenanceIncidents)): ?>
-    <div class="mt-5">
-        <h2 class="h4 mb-4 d-flex align-items-center">
-            <i class="bi bi-tools text-purple me-2"></i>
-            Wartungsarbeiten
-        </h2>
-        
-        <?php
-        // Gruppiere Wartungsarbeiten nach Datum
-        $maintenanceByDate = [];
-        foreach ($maintenanceIncidents as $incident) {
-            $date = date('Y-m-d', strtotime($incident['scheduled_start']));
-            if (!isset($maintenanceByDate[$date])) {
-                $maintenanceByDate[$date] = [];
-            }
-            $maintenanceByDate[$date][] = $incident;
+// Einstellungen holen
+$settings = getSiteSettings();
+$incidentDays = isset($settings['incident_days']) ? (int)$settings['incident_days'] : 7;
+
+// Vorfälle nach Tagen gruppieren
+$incidentsByDay = [];
+$today = strtotime('today');
+
+// Zeitraum festlegen: Vergangene Tage + Heute + Zukünftige Tage mit geplanten Vorfällen
+$startDate = date('Y-m-d', strtotime('-' . $incidentDays . ' days'));
+$endDate = date('Y-m-d', strtotime('+30 days')); // Für zukünftige geplante Vorfälle
+
+// Alle Vorfälle nach Tagen gruppieren
+foreach ($incidents as $incident) {
+    // Datum bestimmen (scheduled_start für alle Vorfälle)
+    $incidentDate = isset($incident['scheduled_start']) ? 
+                    date('Y-m-d', strtotime($incident['scheduled_start'])) : 
+                    date('Y-m-d', strtotime($incident['created_at']));
+    
+    // Nur Vorfälle im definierten Zeitraum berücksichtigen
+    if ($incidentDate >= $startDate && $incidentDate <= $endDate) {
+        if (!isset($incidentsByDay[$incidentDate])) {
+            $incidentsByDay[$incidentDate] = [];
         }
+        $incidentsByDay[$incidentDate][] = $incident;
+    }
+}
+
+// Alle Tage im Zeitraum erstellen (auch ohne Vorfälle)
+$allDays = [];
+$currentDate = $startDate;
+while ($currentDate <= $endDate) {
+    // Nur Tage mit Vorfällen oder im Bereich der letzten X Tage hinzufügen
+    if (isset($incidentsByDay[$currentDate]) || $currentDate <= date('Y-m-d')) {
+        $allDays[$currentDate] = isset($incidentsByDay[$currentDate]) ? $incidentsByDay[$currentDate] : [];
+    }
+    $currentDate = date('Y-m-d', strtotime('+1 day', strtotime($currentDate)));
+}
+
+// Teile die Tage in zukünftige und vergangene auf
+$futureDays = [];
+$pastDays = [];
+$todayStr = date('Y-m-d');
+
+foreach ($allDays as $date => $dayIncidents) {
+    if (strtotime($date) > $today) {
+        // Nur zukünftige Tage mit Vorfällen hinzufügen
+        if (!empty($dayIncidents)) {
+            $futureDays[$date] = $dayIncidents;
+        }
+    } else {
+        $pastDays[$date] = $dayIncidents;
+    }
+}
+
+// Sortiere die Tage (chronologisch für zukünftige, umgekehrt chronologisch für vergangene)
+ksort($futureDays);
+krsort($pastDays);
+
+// Funktion zum Rendern eines Tages mit seinen Vorfällen
+function renderDay($date, $incidents) {
+    $dateTime = strtotime($date);
+    $isToday = date('Y-m-d', $dateTime) === date('Y-m-d');
+    $isTomorrow = date('Y-m-d', $dateTime) === date('Y-m-d', strtotime('+1 day'));
+    $isYesterday = date('Y-m-d', $dateTime) === date('Y-m-d', strtotime('-1 day'));
+    
+    // Bestimme das Datum-Label
+    if ($isToday) {
+        $dateLabel = 'Heute';
+    } elseif ($isTomorrow) {
+        $dateLabel = 'Morgen';
+    } elseif ($isYesterday) {
+        $dateLabel = 'Gestern';
+    } else {
+        $dateLabel = date('d.m.Y', $dateTime);
+    }
+    ?>
+    <div class="mb-4">
+        <h3 class="h5 mb-3"><?php echo $dateLabel; ?></h3>
         
-        // Sortiere nach Datum
-        ksort($maintenanceByDate);
-        ?>
-        
-        <?php foreach ($maintenanceByDate as $date => $incidents): ?>
-            <h3 class="h5 mb-3">
-                <?php
-                $dateTime = strtotime($date);
-                $today = strtotime('today');
-                $tomorrow = strtotime('tomorrow');
-                $yesterday = strtotime('yesterday');
-                
-                if ($dateTime == $today) {
-                    echo 'Heute';
-                } elseif ($dateTime == $tomorrow) {
-                    echo 'Morgen';
-                } elseif ($dateTime == $yesterday) {
-                    echo 'Gestern';
-                } else {
-                    echo date('d.m.Y', $dateTime);
-                }
-                ?>
-            </h3>
+        <?php if (empty($incidents)): ?>
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <p class="text-muted mb-0">
+                        Keine Vorfälle an diesem Tag.
+                    </p>
+                </div>
+            </div>
+        <?php else: ?>
             <?php foreach ($incidents as $incident): ?>
                 <?php renderIncident($incident); ?>
             <?php endforeach; ?>
-        <?php endforeach; ?>
+        <?php endif; ?>
     </div>
+    <?php
+}
+?>
+
+<?php if (!empty($futureDays)): ?>
+<div class="mt-5">
+    <h2 class="h4 mb-4">Geplante Vorfälle</h2>
+    
+    <?php foreach ($futureDays as $date => $incidents): ?>
+        <?php renderDay($date, $incidents); ?>
+    <?php endforeach; ?>
+</div>
 <?php endif; ?>
 
-<?php if (!empty($recentlyResolved)): ?>
-    <div class="mt-5">
-        <h2 class="h4 mb-4 d-flex align-items-center">
-            <i class="bi bi-check-circle-fill text-success me-2"></i>
-            Kürzlich behobene Störungen
-        </h2>
-        <?php foreach ($recentlyResolved as $incident): ?>
-            <?php renderIncident($incident); ?>
+<div class="mt-5">
+    <h2 class="h4 mb-4">Vorfälle der letzten <?php echo $incidentDays; ?> Tage</h2>
+    
+    <?php if (empty($pastDays)): ?>
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <p class="text-muted mb-0">
+                    Keine Vorfälle in den letzten <?php echo $incidentDays; ?> Tagen.
+                </p>
+            </div>
+        </div>
+    <?php else: ?>
+        <?php foreach ($pastDays as $date => $incidents): ?>
+            <?php renderDay($date, $incidents); ?>
         <?php endforeach; ?>
-    </div>
-<?php endif; ?>
+    <?php endif; ?>
+</div>
 
 <div class="mt-5">
     <div class="card shadow-sm">

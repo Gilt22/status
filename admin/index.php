@@ -11,7 +11,7 @@ if (!isLoggedIn()) {
 // Aktuelle Vorfälle abrufen
 $activeIncidents = getIncidents(null, 7); // Vorfälle der letzten 7 Tage
 $plannedMaintenance = getIncidents('planned');
-$activeIssues = getIncidentsByStatus(['investigating', 'identified', 'monitoring']);
+$activeIssues = getIncidentsByStatus(['investigating', 'progress', 'identified', 'monitoring']);
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -87,9 +87,11 @@ $activeIssues = getIncidentsByStatus(['investigating', 'identified', 'monitoring
                                             $statuses = [
                                                 'planned' => 'Geplant',
                                                 'investigating' => 'Untersuchung',
+                                                'progress' => 'In Bearbeitung',
                                                 'identified' => 'Identifiziert',
                                                 'monitoring' => 'Überwachung',
-                                                'resolved' => 'Behoben'
+                                                'resolved' => 'Behoben',
+                                                'completed' => 'Abgeschlossen'
                                             ];
                                             echo $statuses[$incident['status']] ?? $incident['status'];
                                             ?>

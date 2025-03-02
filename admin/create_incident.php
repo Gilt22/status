@@ -109,9 +109,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <option value="">-- Status wählen --</option>
                             <option value="planned" <?php echo (isset($_POST['status']) && $_POST['status'] == 'planned') ? 'selected' : ''; ?>>Geplant</option>
                             <option value="investigating" <?php echo (isset($_POST['status']) && $_POST['status'] == 'investigating') ? 'selected' : ''; ?>>Untersuchung</option>
+                            <option value="progress" <?php echo (isset($_POST['status']) && $_POST['status'] == 'progress') ? 'selected' : ''; ?>>In Bearbeitung</option>
                             <option value="identified" <?php echo (isset($_POST['status']) && $_POST['status'] == 'identified') ? 'selected' : ''; ?>>Identifiziert</option>
                             <option value="monitoring" <?php echo (isset($_POST['status']) && $_POST['status'] == 'monitoring') ? 'selected' : ''; ?>>Überwachung</option>
                             <option value="resolved" <?php echo (isset($_POST['status']) && $_POST['status'] == 'resolved') ? 'selected' : ''; ?>>Behoben</option>
+                            <option value="completed" <?php echo (isset($_POST['status']) && $_POST['status'] == 'completed') ? 'selected' : ''; ?>>Abgeschlossen</option>
                         </select>
                     </div>
                 </div>

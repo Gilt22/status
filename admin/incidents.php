@@ -134,9 +134,11 @@ if (isset($_GET['created'])) {
                                             $statuses = [
                                                 'planned' => 'Geplant',
                                                 'investigating' => 'Untersuchung',
+                                                'progress' => 'In Bearbeitung',
                                                 'identified' => 'Identifiziert',
                                                 'monitoring' => 'Überwachung',
-                                                'resolved' => 'Behoben'
+                                                'resolved' => 'Behoben',
+                                                'completed' => 'Abgeschlossen'
                                             ];
                                             echo $statuses[$incident['status']] ?? $incident['status'];
                                             ?>

@@ -55,6 +55,10 @@ if (isset($_GET['updated'])) {
         background-color: #f39c12;
     }
     
+    .timeline-marker.status-progress {
+        background-color: #f39c12;
+    }
+    
     .timeline-marker.status-identified {
         background-color: #e67e22;
     }
@@ -68,6 +72,10 @@ if (isset($_GET['updated'])) {
     }
     
     .timeline-marker.status-planned {
+        background-color: #3498db;
+    }
+    
+    .timeline-marker.status-completed {
         background-color: #3498db;
     }
     
@@ -158,9 +166,11 @@ if (isset($_GET['updated'])) {
                         $statuses = [
                             'planned' => 'Geplant',
                             'investigating' => 'Untersuchung',
+                            'progress' => 'In Bearbeitung',
                             'identified' => 'Identifiziert',
                             'monitoring' => 'Überwachung',
-                            'resolved' => 'Behoben'
+                            'resolved' => 'Behoben',
+                            'completed' => 'Abgeschlossen'
                         ];
                         echo $statuses[$incident['status']] ?? $incident['status'];
                         ?>
@@ -191,6 +201,10 @@ if (isset($_GET['updated'])) {
                     
                     <?php if ($incident['status'] === 'resolved' && $incident['resolved_at']): ?>
                         <p><strong>Behoben am:</strong> <?php echo date('d.m.Y H:i', strtotime($incident['resolved_at'])); ?></p>
+                    <?php endif; ?>
+
+                    <?php if ($incident['status'] === 'completed' && $incident['resolved_at']): ?>
+                        <p><strong>Abgeschlossen am:</strong> <?php echo date('d.m.Y H:i', strtotime($incident['resolved_at'])); ?></p>
                     <?php endif; ?>
                 </div>
                 

@@ -45,8 +45,8 @@ function initializeDatabase() {
         title TEXT NOT NULL,
         description TEXT,
         type TEXT NOT NULL DEFAULT "incident", -- "incident", "performance", "maintenance", etc.
-        status TEXT NOT NULL, -- "planned", "investigating", "identified", "monitoring", "resolved"
-        scheduled_start TIMESTAMP NULL,
+        status TEXT NOT NULL, -- "planned", "progress", "investigating", "identified", "monitoring", "resolved", "completed"
+        scheduled_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         scheduled_end TIMESTAMP NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -76,7 +76,7 @@ function initializeDatabase() {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         incident_id INTEGER,
         message TEXT NOT NULL,
-        status TEXT NOT NULL, -- "planned", "investigating", "identified", "monitoring", "resolved"
+        status TEXT NOT NULL, -- "planned", "progress", "investigating", "identified", "monitoring", "resolved", "completed"
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (incident_id) REFERENCES incidents(id) ON DELETE CASCADE
     )');

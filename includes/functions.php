@@ -300,8 +300,8 @@ function updateIncidentStatus($incidentId, $message, $status) {
         $stmt->bindValue(':status', $status, SQLITE3_TEXT);
         $stmt->execute();
         
-        // Wenn der Status "resolved" ist, das Lösungsdatum setzen
-        if ($status == 'resolved') {
+        // Wenn der Status "resolved" oder "completed" ist, das Lösungsdatum setzen
+        if ($status == 'resolved' OR $status == 'completed') {
             $resolvedStmt = $db->prepare('UPDATE incidents SET resolved_at = CURRENT_TIMESTAMP WHERE id = :id');
             $resolvedStmt->bindValue(':id', $incidentId, SQLITE3_INTEGER);
             $resolvedStmt->execute();
@@ -337,7 +337,7 @@ function updateIncidentStatus($incidentId, $message, $status) {
  * @param bool $includePlanned Optional: Ob geplante Wartungen einbezogen werden sollen
  * @return array Liste der Vorfälle
  */
-function getIncidents($status = null, $days = null, $includePlanned = true) {
+function getIncidents($status = null, $days = null) {
     $db = getDbConnection();
     
     $query = 'SELECT * FROM incidents';
@@ -347,10 +347,6 @@ function getIncidents($status = null, $days = null, $includePlanned = true) {
     if ($status) {
         $conditions[] = 'status = :status';
         $params[':status'] = $status;
-    }
-    
-    if (!$includePlanned) {
-        $conditions[] = "type != 'maintenance'";
     }
     
     if ($days) {
