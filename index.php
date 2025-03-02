@@ -1,5 +1,5 @@
 <?php
-if (!file_exists(__DIR__ . '/database')) {
+if (!file_exists(__DIR__ . '/install.lock')) {
     header('Location: install.php');
     exit;
 }
