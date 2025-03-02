@@ -45,10 +45,10 @@ Eine professionelle, PHP-basierte Statuspage zur Anzeige des Systemstatus und zu
    ```bash
    nano install.sh
    ```
+   
 
-   --> folgenden Code dort einfügen:
-   ```bash
-   #!/bin/bash
+```
+#!/bin/bash
 # Installer-Skript für die Statuspage
 
 # Sicherstellen, dass das Skript als Root ausgeführt wird.
@@ -345,7 +345,7 @@ else
   echo "Die Statuspage ist nun unter http://$first_domain/ erreichbar und kann über das Webscript fertig installiert werden."
 fi
 echo "-------------------------------------------------"
-   ```
+```
 
 2. **Skript ausführbar machen**
    ```bash
